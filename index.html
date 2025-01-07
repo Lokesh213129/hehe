@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch the Heart Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f2f2f2;
+      overflow: hidden;
+    }
+    .game-container {
+      position: relative;
+      width: 400px;
+      height: 600px;
+      background-color: #ffdde1;
+      border: 3px solid #ff6f91;
+      overflow: hidden;
+    }
+    .basket {
+      position: absolute;
+      bottom: 10px;
+      width: 70px;
+      height: 40px;
+      background-color: #ff6f91;
+      border-radius: 10px;
+      left: 165px;
+    }
+    .heart {
+      position: absolute;
+      font-size: 30px;
+      color: red;
+    }
+    .score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #ff6f91;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="score">Score: 0</div>
+    <div class="basket"></div>
+  </div>
+  <script>
+    const gameContainer = document.querySelector('.game-container');
+    const basket = document.querySelector('.basket');
+    const scoreDisplay = document.querySelector('.score');
+
+    let basketPosition = 165;
+    const basketSpeed = 20;
+    let score = 0;
+
+    // Move the basket
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        basketPosition -= basketSpeed;
+        if (basketPosition < 0) basketPosition = 0;
+      } else if (event.key === 'ArrowRight') {
+        basketPosition += basketSpeed;
+        const maxPosition = gameContainer.clientWidth - basket.offsetWidth;
+        if (basketPosition > maxPosition) basketPosition = maxPosition;
+      }
+      basket.style.left = `${basketPosition}px`;
+    });
+
+    // Create and drop hearts
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('heart');
+      heart.style.left = `${Math.random() * (gameContainer.clientWidth - 30)}px`;
+      heart.style.top = '0px';
+      heart.textContent = '❤️'; // Use emoji for heart
+      gameContainer.appendChild(heart);
+      moveHeart(heart);
+    }
+
+    // Move the heart down
+    function moveHeart(heart) {
+      let heartPosition = 0;
+      const heartInterval = setInterval(() => {
+        heartPosition += 5;
+        heart.style.top = `${heartPosition}px`;
+
+        // Check for collision with the basket
+        if (checkCollision(heart)) {
+          score++;
+          scoreDisplay.textContent = `Score: ${score}`;
+          heart.remove();
+          clearInterval(heartInterval);
+        }
+
+        // Remove the heart if it hits the bottom
+        if (heartPosition > gameContainer.clientHeight) {
+          heart.remove();
+          clearInterval(heartInterval);
+        }
+      }, 50);
+    }
+
+    // Check for collision
+    function checkCollision(heart) {
+      const heartRect = heart.getBoundingClientRect();
+      const basketRect = basket.getBoundingClientRect();
+      return (
+        heartRect.bottom > basketRect.top &&
+        heartRect.top < basketRect.bottom &&
+        heartRect.right > basketRect.left &&
+        heartRect.left < basketRect.right
+      );
+    }
+
+    // Generate hearts every 1 second
+    setInterval(createHeart, 1000);
+  </script>
+</body>
+</html>
